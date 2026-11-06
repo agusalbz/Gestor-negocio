@@ -19,6 +19,7 @@ back/data/
 node_modules/
 dist/
 coverage/
+*.tsbuildinfo
 
 # Env files
 .env

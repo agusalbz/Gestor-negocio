@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -27,3 +29,34 @@ class ClientRead(BaseModel):
     name: str
     phone: str | None
     active: bool
+    total_debt: float = 0.0
+
+
+class ClientPaymentCreate(BaseModel):
+    amount: float = Field(gt=0)
+    payment_method: int = 0
+    sale_id: int | None = None
+    notes: str | None = None
+
+
+class ClientPendingSaleRead(BaseModel):
+    sale_id: int
+    sold_at: datetime
+    total_amount: float
+    total_paid: float
+    balance: float
+
+
+class ClientPaymentHistoryRead(BaseModel):
+    id: int
+    sale_id: int
+    amount: float
+    payment_method: int
+    paid_at: datetime
+
+
+class ClientAccountRead(BaseModel):
+    client: ClientRead
+    total_debt: float
+    pending_sales: list[ClientPendingSaleRead]
+    recent_payments: list[ClientPaymentHistoryRead]

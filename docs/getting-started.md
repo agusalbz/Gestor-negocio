@@ -140,14 +140,26 @@ npm run dev
 - backend modules: `http://127.0.0.1:8000/api/modules`
 - frontend: `http://127.0.0.1:5173`
 
-## Scripts incluidos
+## Scripts de arranque automatizado
 
-En la carpeta `scripts/` hay ayudas de arranque:
+Para facilitar el desarrollo local, disponemos de scripts de arranque según tu sistema operativo:
+
+### Linux / macOS
+En la raíz del proyecto, tienes un script unificado que inicializa tanto el frontend como el backend en paralelo, instalando dependencias y preparando el entorno si no existen:
+
+```bash
+./dev.sh
+```
+
+Al presionar `Ctrl + C`, el script detiene automáticamente ambos servidores de forma limpia.
+
+### Windows (PowerShell)
+En la carpeta `scripts/` hay ayudas de arranque independientes:
 
 - `scripts/dev-back.ps1`
 - `scripts/dev-front.ps1`
 
-Sirven para automatizar el arranque local despues de entender el proceso manual.
+Sirven para automatizar el arranque local después de entender el proceso manual.
 
 ### Que hace cada script
 

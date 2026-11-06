@@ -122,3 +122,25 @@ def test_create_sale_fails_on_insufficient_stock(client: TestClient) -> None:
 
     assert response.status_code == 400
     assert "Stock insuficiente" in response.json()["detail"]
+
+
+def test_create_sale_with_discount_and_payment_method(client: TestClient) -> None:
+    product_id = _create_product(client, name="Auriculares", price=1000, stock=5)
+
+    # 10% discount on 2 units = 2000 - 200 = 1800
+    response = client.post(
+        "/api/sales",
+        json={
+            "status": 2,
+            "items": [{"product_id": product_id, "quantity": 2, "discount_rate": 10}],
+            "payment": {"amount": 1800, "payment_method": 1},
+        },
+    )
+
+    assert response.status_code == 201
+    payload = response.json()
+    assert payload["total_amount"] == 1800.0
+    assert payload["items"][0]["discount_rate"] == 10.0
+    assert payload["items"][0]["subtotal"] == 1800.0
+    assert payload["payments"][0]["payment_method"] == 1
+

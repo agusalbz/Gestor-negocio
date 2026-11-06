@@ -17,5 +17,7 @@ class CashMovement(Base):
     payment_method: Mapped[int] = mapped_column(Integer, index=True)
     concept: Mapped[str] = mapped_column(String(255))
     sale_id: Mapped[int | None] = mapped_column(ForeignKey("sales.id"), default=None, index=True)
+    purchase_id: Mapped[int | None] = mapped_column(ForeignKey("purchases.id"), default=None, index=True)
 
     sale: Mapped["Sale | None"] = relationship(back_populates="cash_movements")
+    purchase: Mapped["Purchase | None"] = relationship(back_populates="cash_movements")

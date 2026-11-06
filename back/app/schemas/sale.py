@@ -21,6 +21,7 @@ class SaleClientInput(BaseModel):
 class SaleItemCreate(BaseModel):
     product_id: int = Field(gt=0)
     quantity: int = Field(gt=0)
+    discount_rate: float = Field(default=0.0, ge=0.0, le=100.0)
 
 
 class SalePaymentInput(BaseModel):
@@ -62,6 +63,7 @@ class SaleItemRead(BaseModel):
     id: int
     quantity: int
     unit_price: float
+    discount_rate: float = 0.0
     subtotal: float
     product: ProductSummaryRead
 
@@ -71,6 +73,7 @@ class SalePaymentRead(BaseModel):
 
     id: int
     amount: float
+    payment_method: int = 0
     paid_at: datetime
     is_excess: bool
 

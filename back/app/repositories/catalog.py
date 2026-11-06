@@ -1,4 +1,4 @@
-from sqlalchemy import Select, select
+from sqlalchemy import Select, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.category import Category
@@ -49,7 +49,14 @@ class ProductRepository:
         if not include_inactive:
             stmt = stmt.where(Product.active.is_(True))
         if search:
-            stmt = stmt.where(Product.name.ilike(f"%{search.strip()}%"))
+            term = f"%{search.strip()}%"
+            stmt = stmt.where(
+                or_(
+                    Product.name.ilike(term),
+                    Product.sku.ilike(term),
+                    Product.barcode.ilike(term),
+                )
+            )
         if category_id is not None:
             stmt = stmt.where(Product.categories.any(Category.id == category_id))
 

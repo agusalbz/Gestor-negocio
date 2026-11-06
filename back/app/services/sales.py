@@ -14,6 +14,7 @@ from app.models.product import Product
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
 from app.models.sale_payment import SalePayment
+from app.models.stock_movement import StockMovement
 from app.repositories.clients import ClientRepository
 from app.repositories.sales import SaleRepository
 from app.schemas.sale import SaleCreate, SalePaymentCreate
@@ -79,7 +80,9 @@ class SaleService:
                     raise ValueError(f"Stock insuficiente para {product.name}")
 
                 unit_price = float(product.price)
-                subtotal = unit_price * item.quantity
+                discount_rate = float(item.discount_rate)
+                discount_multiplier = max(0.0, 1.0 - (discount_rate / 100.0))
+                subtotal = round(unit_price * item.quantity * discount_multiplier, 2)
                 total_amount += subtotal
                 sale_items_payloads.append(
                     {
@@ -87,12 +90,13 @@ class SaleService:
                         "product_id": product.id,
                         "quantity": item.quantity,
                         "unit_price": unit_price,
+                        "discount_rate": discount_rate,
                         "subtotal": subtotal,
                     }
                 )
 
             sale = Sale(
-                total_amount=total_amount,
+                total_amount=round(total_amount, 2),
                 status=payload.status,
                 client=client,
                 items=[],
@@ -101,14 +105,29 @@ class SaleService:
             self.sales.create(sale)
 
             for item_data in sale_items_payloads:
-                item_data["product"].stock -= item_data["quantity"]
+                prod = item_data["product"]
+                prev_stock = prod.stock
+                prod.stock -= item_data["quantity"]
                 self.db.add(
                     SaleItem(
                         sale=sale,
                         product_id=item_data["product_id"],
                         quantity=item_data["quantity"],
                         unit_price=item_data["unit_price"],
+                        discount_rate=item_data["discount_rate"],
                         subtotal=item_data["subtotal"],
+                    )
+                )
+                self.db.add(
+                    StockMovement(
+                        product_id=prod.id,
+                        movement_type="VENTA",
+                        quantity=-item_data["quantity"],
+                        previous_stock=prev_stock,
+                        current_stock=prod.stock,
+                        reference_id=sale.id,
+                        reference_type="sale",
+                        notes=f"Venta #{sale.id}",
                     )
                 )
 
@@ -198,6 +217,7 @@ class SaleService:
         payment = SalePayment(
             sale=sale,
             amount=amount,
+            payment_method=payment_method,
             is_excess=is_excess,
         )
         self.db.add(payment)

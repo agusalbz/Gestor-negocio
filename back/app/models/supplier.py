@@ -18,3 +18,4 @@ class Supplier(Base):
         secondary=product_supplier_table,
         back_populates="suppliers",
     )
+    purchases: Mapped[list["Purchase"]] = relationship(back_populates="supplier")

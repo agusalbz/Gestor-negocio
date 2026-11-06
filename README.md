@@ -126,7 +126,17 @@ Si acabas de clonar el repo, segui esta guia:
 2. Configura el entorno con [docs/getting-started.md](/c:/Users/mateo/Documents/github/repos/Gestor-negocio/docs/getting-started.md)
 3. Valida el arranque con [docs/manual-testing.md](/c:/Users/mateo/Documents/github/repos/Gestor-negocio/docs/manual-testing.md)
 
-## Arranque rapido manual
+## Arranque rápido unificado (Linux / macOS)
+
+Si utilizas Linux o macOS, puedes levantar todo el entorno (frontend y backend en paralelo) ejecutando un único comando desde la raíz del proyecto:
+
+```bash
+./dev.sh
+```
+
+Este script automatiza la creación del entorno virtual de Python, copia los archivos `.env.example` a `.env`, instala todas las dependencias y enciende ambos servidores. Presiona `Ctrl + C` para apagar ambos servicios al mismo tiempo.
+
+## Arranque rápido manual (Windows / Paso a Paso)
 
 ### Backend
 

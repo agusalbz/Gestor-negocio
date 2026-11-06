@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.schemas.stock_movement import StockAdjustmentCreate, StockMovementRead
 from app.services.catalog import ProductService
 
 router = APIRouter()
@@ -20,6 +21,14 @@ def list_products(
         category_id=category_id,
         include_inactive=include_inactive,
     )
+
+
+@router.get("/stock-movements", response_model=list[StockMovementRead])
+def list_all_stock_movements(
+    limit: int = 200,
+    db: Session = Depends(get_db),
+) -> list[StockMovementRead]:
+    return ProductService(db).list_stock_movements(limit=limit)
 
 
 @router.get("/{product_id}", response_model=ProductRead)
@@ -60,3 +69,34 @@ def delete_product(product_id: int, db: Session = Depends(get_db)) -> Response:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{product_id}/kardex", response_model=list[StockMovementRead])
+def get_product_kardex(
+    product_id: int,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+) -> list[StockMovementRead]:
+    try:
+        return ProductService(db).get_product_kardex(product_id, limit=limit)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@router.post("/{product_id}/adjust-stock")
+def adjust_product_stock(
+    product_id: int,
+    payload: StockAdjustmentCreate,
+    db: Session = Depends(get_db),
+) -> dict:
+    try:
+        result = ProductService(db).adjust_stock(product_id, payload)
+        return {
+            "product": ProductRead.model_validate(result["product"]),
+            "movement": result["movement"],
+        }
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+

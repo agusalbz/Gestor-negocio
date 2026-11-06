@@ -61,3 +61,31 @@ def test_soft_delete_product_hides_it_from_default_listing(client: TestClient) -
     assert include_inactive_response.status_code == 200
     assert len(include_inactive_response.json()) == 1
     assert include_inactive_response.json()[0]["active"] is False
+
+
+def test_search_product_by_sku_and_barcode(client: TestClient) -> None:
+    client.post(
+        "/api/products",
+        json={
+            "name": "Yerba Mate",
+            "price": 3500,
+            "stock": 20,
+            "sku": "YERBA-01",
+            "barcode": "7790011223344",
+            "active": True,
+            "category_ids": [],
+        },
+    )
+
+    # Search by SKU
+    sku_res = client.get("/api/products?search=YERBA-01")
+    assert sku_res.status_code == 200
+    assert len(sku_res.json()) == 1
+    assert sku_res.json()[0]["name"] == "Yerba Mate"
+
+    # Search by Barcode
+    barcode_res = client.get("/api/products?search=7790011223344")
+    assert barcode_res.status_code == 200
+    assert len(barcode_res.json()) == 1
+    assert barcode_res.json()[0]["sku"] == "YERBA-01"
+
